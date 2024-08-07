@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Divisas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #222;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            width: 400px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #f00; /* Rojo */
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #111;
+            color: #fff;
+        }
+
+        button {
+            background-color: #f00; /* Rojo */
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #c00; /* Rojo oscuro */
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #28a745; /* Verde para resultados */
+        }
+
+        .links {
+            margin-top: 10px;
+        }
+
+        .links a {
+            color: #f00; /* Rojo */
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #f00; /* Rojo */
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Divisas</h1>
+        <div id="auth-section">
+            <form id="login-form" style="display: block;">
+                <input type="text" id="login-username" placeholder="Nombre de usuario" required>
+                <input type="password" id="login-password" placeholder="Contraseña" required>
+                <button type="button" onclick="login()">Iniciar Sesión</button>
+                <div class="links">
+                    <a href="#" onclick="showRegister()">Registrarse</a>
+                </div>
+                <div id="login-error" class="error"></div>
+            </form>
+
+            <form id="register-form" style="display: none;">
+                <input type="text" id="register-username" placeholder="Nombre de usuario" required>
+                <input type="password" id="register-password" placeholder="Contraseña" required>
+                <button type="button" onclick="register()">Registrar</button>
+                <div class="links">
+                    <a href="#" onclick="showLogin()">Iniciar Sesión</a>
+                </div>
+                <div id="register-error" class="error"></div>
+            </form>
+        </div>
+
+        <div id="calculator-section" style="display: none;">
+            <form id="currency-form">
+                <input type="text" id="amount" placeholder="Monto" required>
+                <select id="from-currency">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CNY">CNY</option>
+                    <option value="INR">INR</option>
+                    <option value="BRL">BRL</option>
+                    <option value="DOP">DOP</option>
+                </select>
+                <select id="to-currency">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CNY">CNY</option>
+                    <option value="INR">INR</option>
+                    <option value="BRL">BRL</option>
+                    <option value="DOP">DOP</option>
+                </select>
+                <button type="button" onclick="convertCurrency()">Convertir</button>
+            </form>
+            <div class="result" id="result"></div>
+            <div class="links">
+                <a href="#" onclick="logout()">Cerrar Sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de una base de datos
+        const usersDB = {};
+
+        function showRegister() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+        }
+
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (username === '' || password === '') {
+                document.getElementById('login-error').innerText = 'Por favor, complete todos los campos.';
+                return;
+            }
+
+            const user = usersDB[username];
+            if (user && user.password === password) {
+                localStorage.setItem('loggedInUser', username);
+                redirectToCalculator();
+            } else {
+                document.getElementById('login-error').innerText = 'Nombre de usuario o contraseña incorrectos.';
+            }
+        }
+
+        function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            if (username === '' || password === '') {
+                document.getElementById('register-error').innerText = 'Por favor, complete todos los campos.';
+                return;
+            }
+
+            if (usersDB[username]) {
+                document.getElementById('register-error').innerText = 'El nombre de usuario ya está en uso.';
+                return;
+            }
+
+            usersDB[username] = { password: password };
+            alert('Registro exitoso! Ahora puede iniciar sesión.');
+            showLogin();
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('calculator-section').style.display = 'none';
+        }
+
+        function convertCurrency() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const fromCurrency = document.getElementById('from-currency').value;
+            const toCurrency = document.getElementById('to-currency').value;
+
+            if (isNaN(amount) || amount <= 0) {
+                alert('Por favor, introduzca un monto válido.');
+                return;
+            }
+
+            const conversionRate = getConversionRate(fromCurrency, toCurrency);
+            const convertedAmount = amount * conversionRate;
+
+            document.getElementById('result').innerText = `Resultado: ${convertedAmount.toFixed(2)} ${toCurrency}`;
+        }
+
+        function getConversionRate(fromCurrency, toCurrency) {
+            const rates = {
+                USD: 1.0,
+                EUR: 0.85,
+                GBP: 0.75,
+                JPY: 110.0,
+                CAD: 1.25,
+                AUD: 1.35,
+                CNY: 6.5,
+                INR: 73.0,
+                BRL: 5.0,
+                DOP: 55.0
+            };
+
+            const fromRate = rates[fromCurrency];
+            const toRate = rates[toCurrency];
+
+            return toRate / fromRate;
+        }
+
+        function redirectToCalculator() {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('calculator-section').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('loggedInUser')) {
+                redirectToCalculator();
+            }
+        });
+    </script>
+</body>
+</html>
